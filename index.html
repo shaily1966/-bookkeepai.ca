@@ -1,1 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>BookKeep AI Pro – CRA-Ready Bookkeeping for Canadian Accountants | $9.99/Statement</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Upload a bank statement PDF. Get a 10-tab CRA-ready Excel in 2 minutes. Deterministic HST/ITC math, Vision API for garbled PDFs, 4-way reconciliation. 31 banks. $9.99 per statement.">
+  <meta property="og:title" content="BookKeep AI Pro – From PDF to CRA-Ready Excel in 2 Minutes">
+  <meta property="og:description" content="The monthly bookkeeping problem solved. 10-tab Excel, deterministic HST/ITC math, 4-way reconciliation, Vision API for unreadable PDFs. $9.99 per statement.">
+  <meta property="og:url" content="https://bookkeepai.ca">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://bookkeepai.ca/og-image.png">
+  <link rel="shortcut icon" href="/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Mono:wght@400;500&family=Lato:wght@300;400;700&display=swap">
+
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-font-smoothing:antialiased; }
+    html { scroll-behavior:smooth; }
+    :root {
+      --bg:#f5f2eb; --bg2:#ede9e0; --bg3:#e4dfd4;
+      --ink:#1a1a14; --ink2:#2d2d22; --muted:#6b6b55;
+      --green:#2d6a4f; --green-lt:#40916c; --green-dk:#1b4332;
+      --amber:#d4a017; --red:#c0392b;
+      --border:rgba(26,26,20,0.12); --radius:8px;
+      --ff-head:'Playfair Display',Georgia,serif;
+      --ff-mono:'DM Mono',monospace;
+      --ff-body:'Lato',sans-serif;
+    }
+    body { background:var(--bg); color:var(--ink); font-family:var(--ff-body); font-size:17px; line-height:1.65; overflow-x:hidden; }
+    a { text-decoration:none; color:inherit; }
+    .container { max-width:1120px; margin:0 auto; padding:0 28px; }
+    body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E"); pointer-events:none; z-index:0; }
+    section, header, footer { position:relative; z-index:1; }
+    .label { display:inline-block; font-family:var(--ff-mono); font-size:11px; font-weight:500; letter-spacing:2px; text-transform:uppercase; color:var(--green); margin-bottom:16px; }
+    h2 { font-family:var(--ff-head); font-size:clamp(30px,4vw,48px); font-weight:900; color:var(--ink); letter-spacing:-1px; line-height:1.1; }
+    h3 { font-family:var(--ff-head); font-size:clamp(18px,2vw,22px); font-weight:700; color:var(--ink); margin-bottom:10px; }
+    .section-sub { color:var(--muted); font-size:18px; max-width:540px; margin-top:14px; line-height:1.7; }
+    .btn { display:inline-block; font-family:var(--ff-body); font-weight:700; font-size:16px; padding:14px 32px; border-radius:var(--radius); transition:all .2s; cursor:pointer; }
+    .btn-green { background:var(--green); color:#fff; }
+    .btn-green:hover { background:var(--green-lt); transform:translateY(-1px); box-shadow:0 6px 20px rgba(45,106,79,0.3); }
+    .btn-outline { border:1.5px solid var(--green); color:var(--green); background:transparent; }
+    .btn-outline:hover { background:rgba(45,106,79,0.06); }
+
+    /* Nav */
+    header { position:sticky; top:0; z-index:200; background:rgba(245,242,235,0.92); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); }
+    .nav-inner { display:flex; align-items:center; justify-content:space-between; height:64px; }
+    .logo { font-family:var(--ff-head); font-size:22px; font-weight:900; color:var(--ink); }
+    .logo span { color:var(--green); }
+    .nav-links { display:flex; align-items:center; gap:4px; }
+    .nav-links a { color:var(--muted); font-size:14px; font-weight:700; padding:7px 14px; border-radius:6px; transition:all .2s; }
+    .nav-links a:hover { color:var(--ink); background:var(--bg2); }
+    .nav-cta { background:var(--green) !important; color:#fff !important; margin-left:8px; }
+
+    /* Hero */
+    .hero { padding:100px 0 80px; }
+    .hero-inner { display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:center; }
+    .hero-badge { display:inline-flex; align-items:center; gap:8px; background:#fff; border:1px solid var(--border); color:var(--green); font-family:var(--ff-mono); font-size:11px; font-weight:500; padding:6px 14px; border-radius:100px; margin-bottom:28px; letter-spacing:1.5px; text-transform:uppercase; }
+    h1 { font-family:var(--ff-head); font-size:clamp(36px,5vw,60px); font-weight:900; color:var(--ink); letter-spacing:-2px; line-height:1.05; margin-bottom:24px; }
+    h1 em { font-style:italic; color:var(--green); }
+    .hero-sub { font-size:18px; color:var(--muted); max-width:480px; line-height:1.75; margin-bottom:36px; }
+    .hero-ctas { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+    .hero-note { font-family:var(--ff-mono); font-size:12px; color:var(--muted); margin-top:16px; letter-spacing:.5px; }
+
+    /* Excel preview */
+    .excel-preview { background:#fff; border:1px solid var(--border); border-radius:12px; overflow:hidden; box-shadow:0 20px 50px rgba(26,26,20,0.12); }
+    .excel-tabs { display:flex; background:var(--bg2); border-bottom:1px solid var(--border); padding:0 6px; overflow-x:auto; }
+    .excel-tab { font-family:var(--ff-mono); font-size:9.5px; font-weight:500; padding:7px 8px; color:var(--muted); border-bottom:2px solid transparent; white-space:nowrap; }
+    .excel-tab.active { color:var(--green); border-bottom-color:var(--green); background:#fff; }
+    .excel-body { overflow-x:auto; }
+    .excel-table { width:100%; border-collapse:collapse; font-family:var(--ff-mono); font-size:11px; }
+    .excel-table th { background:var(--bg2); color:var(--muted); font-weight:500; padding:6px 9px; text-align:left; border-bottom:1px solid var(--border); white-space:nowrap; font-size:10px; }
+    .excel-table td { padding:5px 9px; border-bottom:1px solid rgba(26,26,20,0.06); white-space:nowrap; }
+    .excel-table tr:hover td { background:rgba(45,106,79,0.04); }
+    .cg { color:var(--green); font-weight:500; }
+    .ca { color:var(--amber); font-weight:500; }
+    .cr { color:var(--red); font-weight:500; }
+    .cm { color:var(--muted); }
+    .cp { display:inline-block; padding:2px 6px; border-radius:100px; font-size:10px; font-weight:500; }
+    .cpg { background:rgba(45,106,79,0.12); color:var(--green); }
+    .cpa { background:rgba(212,160,23,0.12); color:var(--amber); }
+
+    /* Problem */
+    .problem { padding:90px 0; background:var(--ink); }
+    .problem h2 { color:#fff; }
+    .problem .section-sub { color:rgba(255,255,255,0.5); max-width:600px; }
+    .problem-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:2px; margin-top:52px; }
+    .problem-item { background:rgba(255,255,255,0.04); padding:32px 28px; }
+    .problem-item:first-child { border-radius:var(--radius) 0 0 0; }
+    .problem-item:nth-child(3) { border-radius:0 var(--radius) 0 0; }
+    .problem-item:nth-child(4) { border-radius:0 0 0 var(--radius); }
+    .problem-item:last-child { border-radius:0 0 var(--radius) 0; }
+    .problem-icon { font-size:26px; margin-bottom:14px; }
+    .problem-item h3 { color:#fff; font-size:17px; margin-bottom:8px; }
+    .problem-item p { color:rgba(255,255,255,0.4); font-size:14px; line-height:1.7; }
+    .problem-cost { margin-top:40px; display:grid; grid-template-columns:repeat(4,1fr); gap:2px; }
+    .pc-item { background:rgba(255,0,0,0.08); border:1px solid rgba(255,0,0,0.15); padding:24px 20px; text-align:center; }
+    .pc-item:first-child { border-radius:var(--radius) 0 0 var(--radius); }
+    .pc-item:last-child { border-radius:0 var(--radius) var(--radius) 0; }
+    .pc-num { font-family:var(--ff-head); font-size:36px; font-weight:900; color:#ff8080; line-height:1; margin-bottom:6px; }
+    .pc-desc { font-family:var(--ff-mono); font-size:11px; color:rgba(255,255,255,0.35); line-height:1.5; }
+
+    /* Disruption bar */
+    .disruption { padding:60px 0; background:var(--bg2); }
+    .disruption-label { text-align:center; font-family:var(--ff-mono); font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:2px; margin-bottom:36px; }
+    .disruption-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:2px; }
+    .di { background:#fff; padding:28px 20px; text-align:center; }
+    .di:first-child { border-radius:var(--radius) 0 0 var(--radius); }
+    .di:last-child { border-radius:0 var(--radius) var(--radius) 0; }
+    .di-who { font-family:var(--ff-mono); font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; }
+    .di-old { font-family:var(--ff-head); font-size:26px; font-weight:900; color:rgba(26,26,20,0.25); text-decoration:line-through; text-decoration-color:rgba(192,57,43,0.5); margin-bottom:6px; }
+    .di-new { font-family:var(--ff-head); font-size:30px; font-weight:900; color:var(--green); }
+    .di-desc { font-family:var(--ff-mono); font-size:11px; color:var(--muted); margin-top:6px; }
+
+    /* Vision section */
+    .vision { padding:90px 0; background:var(--ink2); }
+    .vision h2 { color:#fff; }
+    .vision .section-sub { color:rgba(255,255,255,0.5); }
+    .vision-inner { display:grid; grid-template-columns:1fr 1.2fr; gap:60px; align-items:center; margin-top:52px; }
+    .vision-stat { background:rgba(111,207,151,0.1); border:1px solid rgba(111,207,151,0.2); border-radius:var(--radius); padding:32px; text-align:center; margin-bottom:16px; }
+    .vision-stat-num { font-family:var(--ff-head); font-size:60px; font-weight:900; color:#6fcf97; line-height:1; margin-bottom:8px; }
+    .vision-stat-label { color:rgba(255,255,255,0.45); font-size:14px; line-height:1.5; }
+    .vision-stat2 { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:var(--radius); padding:24px; display:grid; grid-template-columns:1fr 1fr; gap:16px; text-align:center; }
+    .vs2-num { font-family:var(--ff-head); font-size:32px; font-weight:900; color:#6fcf97; line-height:1; margin-bottom:4px; }
+    .vs2-label { color:rgba(255,255,255,0.35); font-size:12px; font-family:var(--ff-mono); }
+    .vision-right h3 { color:#fff; font-size:24px; margin-bottom:14px; }
+    .vision-right p { color:rgba(255,255,255,0.5); font-size:15px; line-height:1.75; margin-bottom:14px; }
+    .vision-banks { display:flex; flex-wrap:wrap; gap:8px; margin-top:20px; }
+    .vb { font-family:var(--ff-mono); font-size:11px; background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.55); padding:4px 10px; border-radius:100px; }
+    .vb.bad { background:rgba(192,57,43,0.15); color:#ff9999; }
+    .vision-note { background:rgba(111,207,151,0.08); border:1px solid rgba(111,207,151,0.2); border-radius:var(--radius); padding:16px 20px; margin-top:20px; color:rgba(255,255,255,0.6); font-size:14px; line-height:1.6; }
+
+    /* 10-tab output */
+    .output { padding:90px 0; }
+    .output-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-top:52px; }
+    .output-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:24px; transition:border-color .2s; }
+    .output-card:hover { border-color:var(--green); }
+    .output-card-top { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+    .tab-badge { font-family:var(--ff-mono); font-size:9px; font-weight:500; background:rgba(45,106,79,0.1); color:var(--green); padding:3px 8px; border-radius:4px; letter-spacing:1px; text-transform:uppercase; white-space:nowrap; }
+    .output-card h3 { font-size:16px; margin-bottom:0; }
+    .output-card p { color:var(--muted); font-size:14px; line-height:1.6; }
+    .output-trust { margin-top:8px; font-family:var(--ff-mono); font-size:11px; color:var(--green); }
+
+    /* Canadian */
+    .canadian { padding:90px 0; background:var(--bg2); }
+    .canadian-inner { display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:start; margin-top:52px; }
+    .ca-rule { display:flex; gap:16px; padding:18px 0; border-bottom:1px solid var(--border); }
+    .ca-rule:first-child { border-top:1px solid var(--border); }
+    .ca-badge { background:rgba(45,106,79,0.1); border:1px solid rgba(45,106,79,0.2); color:var(--green); font-family:var(--ff-mono); font-size:10px; font-weight:500; padding:4px 8px; border-radius:4px; white-space:nowrap; flex-shrink:0; height:fit-content; margin-top:2px; }
+    .ca-rule h4 { font-size:15px; font-weight:700; color:var(--ink); margin-bottom:3px; }
+    .ca-rule p { font-size:13px; color:var(--muted); line-height:1.5; }
+    .ca-stats { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .ca-stat { background:#fff; border:1px solid var(--border); border-radius:var(--radius); padding:24px; text-align:center; }
+    .ca-stat-num { font-family:var(--ff-head); font-size:38px; font-weight:900; color:var(--green); line-height:1; margin-bottom:8px; }
+    .ca-stat-label { color:var(--muted); font-size:13px; line-height:1.5; }
+
+    /* Accuracy */
+    .accuracy { padding:90px 0; }
+    .accuracy-inner { display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:start; margin-top:52px; }
+    .accuracy-card { background:#fff; border:1px solid var(--border); border-radius:12px; overflow:hidden; box-shadow:0 8px 24px rgba(26,26,20,0.06); }
+    .accuracy-card-hdr { background:rgba(212,160,23,0.08); border-bottom:1px solid rgba(212,160,23,0.18); padding:12px 20px; display:flex; align-items:center; gap:8px; }
+    .accuracy-card-title { font-family:var(--ff-mono); font-size:11px; font-weight:500; color:var(--amber); letter-spacing:1px; text-transform:uppercase; }
+    .acc-item { padding:14px 20px; border-bottom:1px solid rgba(26,26,20,0.06); }
+    .acc-item:last-child { border-bottom:none; }
+    .acc-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; }
+    .acc-name { font-family:var(--ff-mono); font-size:11px; font-weight:500; color:var(--ink); }
+    .acc-amount { font-family:var(--ff-mono); font-size:11px; color:var(--red); }
+    .acc-q { font-size:13px; color:var(--muted); line-height:1.5; font-style:italic; }
+    .accuracy-right h3 { font-size:24px; margin-bottom:14px; }
+    .accuracy-right p { color:var(--muted); font-size:16px; line-height:1.75; margin-bottom:14px; }
+    .acc-highlight { background:rgba(45,106,79,0.07); border-left:3px solid var(--green); border-radius:0 var(--radius) var(--radius) 0; padding:16px 20px; margin-top:20px; }
+    .acc-highlight p { color:var(--ink2); font-size:15px; margin:0; }
+
+    /* Desktop */
+    .desktop-app { padding:90px 0; background:var(--ink); }
+    .desktop-app h2 { color:#fff; }
+    .desktop-app .section-sub { color:rgba(255,255,255,0.5); }
+    .desktop-inner { display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:start; margin-top:52px; }
+    .desktop-card { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:40px; }
+    .desktop-card h3 { color:#fff; font-size:22px; margin-bottom:14px; }
+    .desktop-card p { color:rgba(255,255,255,0.5); font-size:15px; line-height:1.75; margin-bottom:24px; }
+    .desktop-list { list-style:none; margin-bottom:32px; }
+    .desktop-list li { display:flex; align-items:flex-start; gap:10px; color:rgba(255,255,255,0.75); font-size:15px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.06); line-height:1.5; }
+    .desktop-list li:last-child { border-bottom:none; }
+    .desktop-list li::before { content:'🔒'; flex-shrink:0; }
+    .desktop-right h3 { color:#fff; font-size:22px; margin-bottom:14px; }
+    .desktop-right p { color:rgba(255,255,255,0.5); font-size:15px; line-height:1.75; margin-bottom:14px; }
+    .dr-tier { display:flex; gap:14px; padding:18px 0; border-bottom:1px solid rgba(255,255,255,0.06); }
+    .dr-tier:first-of-type { border-top:1px solid rgba(255,255,255,0.06); }
+    .dr-badge { background:rgba(111,207,151,0.1); border:1px solid rgba(111,207,151,0.2); color:#6fcf97; font-family:var(--ff-mono); font-size:10px; padding:4px 8px; border-radius:4px; white-space:nowrap; flex-shrink:0; height:fit-content; margin-top:2px; }
+    .dr-tier h4 { color:#fff; font-size:15px; font-weight:700; margin-bottom:3px; font-family:var(--ff-body); }
+    .dr-tier p { color:rgba(255,255,255,0.4); font-size:13px; line-height:1.5; margin:0; }
+
+    /* How it works */
+    .howitworks { padding:90px 0; background:var(--bg2); }
+    .steps-row { display:grid; grid-template-columns:repeat(3,1fr); gap:40px; margin-top:52px; position:relative; }
+    .steps-row::before { content:''; position:absolute; top:28px; left:calc(16.66% + 14px); width:calc(66.66% - 28px); height:1px; background:var(--border); }
+    .step { position:relative; }
+    .step-dot { width:56px; height:56px; border-radius:50%; background:var(--bg); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; margin-bottom:24px; position:relative; z-index:1; }
+    .step-dot span { font-family:var(--ff-head); font-size:20px; font-weight:900; color:var(--green); }
+    .step h3 { margin-bottom:8px; font-size:18px; }
+    .step p { color:var(--muted); font-size:15px; line-height:1.7; }
+    .step-time { display:inline-block; margin-top:12px; font-family:var(--ff-mono); font-size:11px; color:var(--green); background:rgba(45,106,79,0.08); padding:4px 10px; border-radius:100px; }
+
+    /* Pricing */
+    .pricing { padding:90px 0; }
+    .pricing-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; margin-top:52px; }
+    .price-card { background:#fff; border:1.5px solid var(--border); border-radius:14px; padding:36px; position:relative; display:flex; flex-direction:column; }
+    .price-card.featured { border-color:var(--green); box-shadow:0 0 0 4px rgba(45,106,79,0.08); }
+    .price-tag { position:absolute; top:-13px; left:24px; background:var(--green); color:#fff; font-family:var(--ff-mono); font-size:10px; font-weight:500; letter-spacing:2px; text-transform:uppercase; padding:4px 12px; border-radius:100px; }
+    .price-name { font-family:var(--ff-mono); font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:14px; }
+    .price-amount { display:flex; align-items:baseline; gap:4px; margin-bottom:6px; }
+    .price-num { font-family:var(--ff-head); font-size:52px; font-weight:900; color:var(--ink); line-height:1; }
+    .price-per { color:var(--muted); font-size:15px; }
+    .price-desc { color:var(--muted); font-size:14px; margin-bottom:24px; padding-bottom:24px; border-bottom:1px solid var(--border); line-height:1.6; }
+    .check-list { list-style:none; margin-bottom:28px; flex:1; }
+    .check-list li { display:flex; align-items:flex-start; gap:10px; color:var(--ink); font-size:14px; padding:8px 0; border-bottom:1px solid rgba(26,26,20,0.06); line-height:1.5; }
+    .check-list li:last-child { border-bottom:none; }
+    .check-list li::before { content:'✓'; color:var(--green); font-weight:900; flex-shrink:0; }
+
+    /* Testimonials */
+    .testimonials { padding:90px 0; background:var(--bg2); }
+    .testi-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:20px; margin-top:52px; }
+    .testi-card { background:#fff; border:1px solid var(--border); border-radius:var(--radius); padding:32px; }
+    .testi-stars { color:var(--amber); font-size:14px; letter-spacing:2px; margin-bottom:14px; }
+    .testi-card blockquote { font-size:15px; color:var(--ink2); line-height:1.75; margin-bottom:22px; font-style:italic; }
+    .testi-author { display:flex; align-items:center; gap:12px; }
+    .testi-avatar { width:40px; height:40px; border-radius:50%; background:var(--green); display:flex; align-items:center; justify-content:center; font-family:var(--ff-head); font-size:16px; font-weight:900; color:#fff; flex-shrink:0; }
+    .testi-name { font-weight:700; color:var(--ink); font-size:15px; }
+    .testi-role { color:var(--muted); font-size:13px; }
+
+    /* CTA */
+    .cta-banner { padding:100px 0; background:var(--green-dk); text-align:center; }
+    .cta-banner h2 { color:#fff; max-width:600px; margin:0 auto 16px; }
+    .cta-banner p { color:rgba(255,255,255,0.6); max-width:460px; margin:0 auto 36px; font-size:18px; }
+    .cta-trust { display:flex; justify-content:center; gap:28px; flex-wrap:wrap; margin-top:28px; }
+    .cta-trust-item { display:flex; align-items:center; gap:7px; color:rgba(255,255,255,0.5); font-family:var(--ff-mono); font-size:12px; }
+    .cta-trust-item::before { content:'✓'; color:#6fcf97; }
+
+    /* FAQ */
+    .faq { padding:90px 0; }
+    .faq-grid { display:grid; grid-template-columns:1fr 1fr; gap:0 60px; margin-top:52px; }
+    details.question { border-top:1px solid var(--border); padding:22px 0; }
+    details.question:last-of-type { border-bottom:1px solid var(--border); }
+    details.question summary { font-weight:700; font-size:16px; color:var(--ink); cursor:pointer; list-style:none; display:flex; justify-content:space-between; align-items:center; user-select:none; gap:16px; }
+    details.question summary::-webkit-details-marker { display:none; }
+    details.question summary::after { content:'+'; font-size:22px; color:var(--green); flex-shrink:0; transition:transform .2s; }
+    details[open].question summary::after { transform:rotate(45deg); }
+    details.question .ans { color:var(--muted); font-size:15px; line-height:1.75; margin-top:14px; }
+
+    /* Footer */
+    footer { border-top:1px solid var(--border); padding:48px 0 36px; background:var(--bg); }
+    .footer-top { display:grid; grid-template-columns:1.6fr 1fr 1fr; gap:48px; padding-bottom:40px; border-bottom:1px solid var(--border); margin-bottom:32px; }
+    .footer-brand .logo { font-size:20px; margin-bottom:14px; }
+    .footer-brand p { color:var(--muted); font-size:13px; line-height:1.7; max-width:280px; }
+    .footer-disclaimer { color:var(--muted); font-size:12px; line-height:1.6; margin-top:12px; font-style:italic; max-width:280px; }
+    .footer-col h4 { font-family:var(--ff-mono); font-size:11px; color:var(--ink); text-transform:uppercase; letter-spacing:2px; margin-bottom:16px; }
+    .footer-col a { display:block; color:var(--muted); font-size:14px; margin-bottom:10px; transition:color .2s; }
+    .footer-col a:hover { color:var(--ink); }
+    .footer-bottom { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+    .footer-bottom p { color:var(--muted); font-size:13px; }
+    .ca-badge { display:flex; align-items:center; gap:8px; background:rgba(45,106,79,0.08); border:1px solid rgba(45,106,79,0.2); padding:7px 14px; border-radius:100px; color:var(--green); font-family:var(--ff-mono); font-size:11px; font-weight:500; }
+
+    /* Responsive */
+    @media (max-width:1024px) {
+      .hero-inner, .canadian-inner, .accuracy-inner, .desktop-inner, .vision-inner { grid-template-columns:1fr; gap:40px; }
+      .disruption-grid, .problem-grid { grid-template-columns:repeat(2,1fr); }
+      .problem-cost { grid-template-columns:repeat(2,1fr); }
+      .pricing-grid { grid-template-columns:1fr; max-width:480px; }
+      .footer-top { grid-template-columns:1fr 1fr; }
+      .footer-brand { grid-column:1/-1; }
+    }
+    @media (max-width:768px) {
+      .steps-row::before { display:none; }
+      .steps-row, .output-grid, .testi-grid, .faq-grid { grid-template-columns:1fr; }
+      .excel-preview { display:none; }
+      .disruption-grid { grid-template-columns:1fr 1fr; }
+      .footer-top { grid-template-columns:1fr; }
+      .footer-brand { grid-column:auto; }
+      nav .nav-links a:not(.nav-cta) { display:none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<header>
+  <div class="container">
+    <div class="nav-inner">
+      <a href="/" class="logo">BookKeep<span>AI</span> <span style="font-size:13px;color:var(--muted);font-family:var(--ff-mono);font-weight:400">Pro</span></a>
+      <div class="nav-links">
+        <a href="mailto:support@bookkeepai.ca">Contact</a>
+        <a href="#problem">The Problem</a>
+        <a href="#output">10-Tab Excel</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+        <a href="https://buy.stripe.com/aFa3cv8RT1Ig3h80OZgYU01" target="_blank" class="nav-cta btn">Start for $9.99 →</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div>
+        <div class="hero-badge">🇨🇦 CRA T2125 Calibrated · 31 Banks</div>
+        <h1>Monthly bookkeeping used to eat <em>3–4 hours.</em></h1>
+        <p class="hero-sub">
+          Upload a bank statement PDF. Get a 10-tab, CRA-ready Excel in 2 minutes. AI categorization + deterministic tax math — built specifically for Canadian accountants and bookkeepers.
+        </p>
+        <div class="hero-ctas">
+          <a href="https://buy.stripe.com/aFa3cv8RT1Ig3h80OZgYU01" target="_blank" class="btn btn-green">Start for $9.99 →</a>
+          <a href="#problem" class="btn btn-outline">See the Problem We Solve</a>
+        </div>
+        <p class="hero-note">NO SUBSCRIPTION · PAY PER STATEMENT · 10-TAB CRA-READY EXCEL</p>
+      </div>
+
+      <!-- Excel preview with all 10 tabs -->
+      <div class="excel-preview">
+        <div class="excel-tabs">
+          <div class="excel-tab active">All Transactions</div>
+          <div class="excel-tab">Expense Summary</div>
+          <div class="excel-tab">HST-GST ITC</div>
+          <div class="excel-tab">Fixed Assets CCA</div>
+          <div class="excel-tab">Needs Review</div>
+          <div class="excel-tab">Reconciliation</div>
+          <div class="excel-tab">Validation</div>
+          <div class="excel-tab">T5018</div>
+          <div class="excel-tab">QBO Export</div>
+          <div class="excel-tab">Summary</div>
+        </div>
+        <div class="excel-body">
+          <table class="excel-table">
+            <thead>
+              <tr><th>Date</th><th>Description</th><th>Debit</th><th>Category</th><th>T2125</th><th>ITC</th><th>Conf</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="cm">2025-01-08</td><td>PETRO CANADA #4821 ON</td><td class="cr">$82.40</td><td class="cg">Motor Vehicle</td><td class="cm">9281</td><td class="cg">$9.50</td><td><span class="cp cpg">95</span></td></tr>
+              <tr><td class="cm">2025-01-09</td><td>HOME DEPOT #7823 ON</td><td class="cr">$347.82</td><td class="cg">Materials & Supplies</td><td class="cm">8811</td><td class="cg">$40.11</td><td><span class="cp cpg">92</span></td></tr>
+              <tr><td class="cm">2025-01-11</td><td>TIM HORTONS #0912</td><td class="cr">$18.75</td><td class="cg">Meals & Entertain.</td><td class="cm">8523</td><td class="cg">$1.08 ½</td><td><span class="cp cpg">95</span></td></tr>
+              <tr><td class="cm">2025-01-14</td><td>AMZN MKTP CA*Z99335</td><td class="cr">$124.99</td><td class="ca">Needs Review</td><td class="cm">—</td><td>—</td><td><span class="cp cpa">70</span></td></tr>
+              <tr><td class="cm">2025-01-22</td><td>COSTCO WHOLESALE W126</td><td class="cr">$231.74</td><td class="cg">Materials & Supplies</td><td class="cm">8811</td><td class="cg">$26.71</td><td><span class="cp cpg">91</span></td></tr>
+              <tr><td class="cm">2025-01-28</td><td>WSIB ONTARIO PMT</td><td class="cr">$420.00</td><td class="cg">Govt Remittances</td><td class="cm">—</td><td>—</td><td><span class="cp cpg">95</span></td></tr>
+              <tr><td class="cm">2025-02-03</td><td>DEWALT TOOLS #8831</td><td class="cr">$612.00</td><td class="cg">Materials & Supplies</td><td class="cm">8811</td><td class="cg">$70.55</td><td><span class="cp cpg">93</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- The Problem -->
+<section class="problem" id="problem">
+  <div class="container">
+    <p class="label" style="color:rgba(255,100,100,0.7)">The Monthly Bookkeeping Problem</p>
+    <h2>What eats your time every single month.</h2>
+    <p class="section-sub">Every Canadian bookkeeper and accountant faces the same six problems — every month, for every client.</p>
+    <div class="problem-grid">
+      <div class="problem-item">
+        <div class="problem-icon">⏱️</div>
+        <h3>3–4 Hours Per Client</h3>
+        <p>Manual categorization of 200–500 transactions from PDF statements. Copying dates, vendors, amounts into Excel row by row. Every month. For every client.</p>
+      </div>
+      <div class="problem-item">
+        <div class="problem-icon">🔤</div>
+        <h3>CID Font PDFs — Unreadable</h3>
+        <p>CIBC, some RBC and BMO statements use encoded fonts. Copy-paste gives garbled text. You re-type everything manually. There's no workaround — until now.</p>
+      </div>
+      <div class="problem-item">
+        <div class="problem-icon">🧮</div>
+        <h3>HST Math Errors</h3>
+        <p>Applying 13% ON vs 5% BC vs 15% NS manually. Missing the 50% meals rule. Wrong ITC on exempt supplies like insurance. Easy to miss, hard to catch.</p>
+      </div>
+      <div class="problem-item">
+        <div class="problem-icon">🔁</div>
+        <h3>Multi-Account Reconciliation</h3>
+        <p>Matching Visa payments to chequing debits across 3 statements. Finding duplicates. Proving to CRA every dollar reconciles. Hours of cross-referencing.</p>
+      </div>
+      <div class="problem-item">
+        <div class="problem-icon">🛒</div>
+        <h3>Personal vs Business Guessing</h3>
+        <p>Client's Walmart, Amazon, Canadian Tire — business materials or personal? No receipts. You guess and hope CRA doesn't audit. It's not sustainable.</p>
+      </div>
+      <div class="problem-item">
+        <div class="problem-icon">📋</div>
+        <h3>Year-End T2125 Scramble</h3>
+        <p>Remapping 12 months of categories to CRA line numbers. Separating CCA assets from direct expenses. Filling Schedule C for FX transactions. Every year.</p>
+      </div>
+    </div>
+    <div class="problem-cost">
+      <div class="pc-item">
+        <div class="pc-num">3.5 hrs</div>
+        <div class="pc-desc">average per client<br>per month</div>
+      </div>
+      <div class="pc-item">
+        <div class="pc-num">$175</div>
+        <div class="pc-desc">cost at $50/hr<br>per statement</div>
+      </div>
+      <div class="pc-item">
+        <div class="pc-num">$8,750</div>
+        <div class="pc-desc">monthly cost<br>across 50 clients</div>
+      </div>
+      <div class="pc-item">
+        <div class="pc-num">42,000</div>
+        <div class="pc-desc">keystrokes wasted<br>per client/month</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Disruption Bar -->
+<div class="disruption">
+  <div class="container">
+    <p class="disruption-label">What bookkeeping used to cost — vs what you pay today</p>
+    <div class="disruption-grid">
+      <div class="di">
+        <div class="di-who">Bookkeeper (hourly)</div>
+        <div class="di-old">$75–150/hr</div>
+        <div class="di-new">$9.99</div>
+        <div class="di-desc">per statement</div>
+      </div>
+      <div class="di">
+        <div class="di-who">Accounting Firm</div>
+        <div class="di-old">$200–500</div>
+        <div class="di-new">$9.99</div>
+        <div class="di-desc">per statement review</div>
+      </div>
+      <div class="di">
+        <div class="di-who">QuickBooks + Accountant</div>
+        <div class="di-old">$50+/month</div>
+        <div class="di-new">$9.99</div>
+        <div class="di-desc">no subscription needed</div>
+      </div>
+      <div class="di">
+        <div class="di-who">Manual Entry (DIY)</div>
+        <div class="di-old">3–4 hrs</div>
+        <div class="di-new">2 min</div>
+        <div class="di-desc">per statement</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Vision API Section -->
+<section class="vision" id="vision">
+  <div class="container">
+    <p class="label" style="color:rgba(111,207,151,0.7)">CID Font Problem — Solved</p>
+    <h2 style="color:#fff">Garbled PDFs? Vision API reads<br>what copy-paste can't.</h2>
+    <p class="section-sub">CIBC, some RBC and BMO statements use CID-encoded fonts that produce garbled text when copy-pasted. BookKeep AI falls back to Vision API — reading page images directly.</p>
+    <div class="vision-inner">
+      <div>
+        <div class="vision-stat">
+          <div class="vision-stat-num">556</div>
+          <div class="vision-stat-label">transactions extracted from 58 unreadable CID pages<br>— zero manual entry required</div>
+        </div>
+        <div class="vision-stat2">
+          <div>
+            <div class="vs2-num">58</div>
+            <div class="vs2-label">unreadable pages</div>
+          </div>
+          <div>
+            <div class="vs2-num">0</div>
+            <div class="vs2-label">manual re-types needed</div>
+          </div>
+        </div>
+      </div>
+      <div class="vision-right">
+        <h3>How it works</h3>
+        <p>When our text extractor detects garbled or empty output from a page, it automatically switches to Vision API — rendering each page as an image and extracting transactions visually, exactly as a human would read them.</p>
+        <p>The result is the same clean, categorized output regardless of whether your PDF uses readable fonts or CID-encoded fonts. No special handling required on your end — just upload and go.</p>
+        <div class="vision-banks">
+          <span class="vb bad">CIBC ⚠ CID</span>
+          <span class="vb bad">RBC (some) ⚠ CID</span>
+          <span class="vb bad">BMO (some) ⚠ CID</span>
+          <span class="vb">TD ✓</span>
+          <span class="vb">Scotiabank ✓</span>
+          <span class="vb">Amex ✓</span>
+          <span class="vb">Triangle MC ✓</span>
+          <span class="vb">Tangerine ✓</span>
+          <span class="vb">National Bank ✓</span>
+        </div>
+        <div class="vision-note">
+          ✓ Vision API fallback is automatic — no extra cost, no extra steps. All 31 supported banks produce clean output regardless of font encoding.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10-Tab Excel Output -->
+<section class="output" id="output">
+  <div class="container">
+    <p class="label">10-Tab Excel Output</p>
+    <h2>Every tab your accountant<br>needs. Formula-linked.</h2>
+    <p class="section-sub">Edit a category in All Transactions — Expense Summary, ITC, T2125 lines all update instantly via SUMIFS. Correct once, never re-run the app.</p>
+    <div class="output-grid">
+
+      <div class="output-card">
+        <div class="output-card-top">
+          <span class="tab-badge">Tab 1</span>
+          <h3>All Transactions</h3>
+        </div>
+        <p>Date, Source, Description, Debit, Credit, Type, Category, T2125 Line, Biz%, ITC Rule, ITC Amount, Confidence, Notes — formula-linked to all other tabs. The master sheet.</p>
+      </div>
+
+      <div class="output-card">
+        <div class="output-card-top">
+          <span class="tab-badge">Tab 2</span>
+          <h3>Expense Summary</h3>
+        </div>
+        <p>SUMIFS from All Transactions. Edit a category → totals, ITC, T2125 lines update instantly. No re-export needed. Ready to transfer to your T2125 Schedule directly.</p>
+      </div>
+
+      <div class="output-card">
+        <div class="output-card-top">
+          <span class="tab-badge">Tab 3</span>
+          <h3>HST-GST ITC</h3>
+        </div>
+        <p>Province-aware: ON 13%, BC 5%, AB 5%, Maritime 15%. Meals auto-50% rule. Insurance and bank charges auto-exempt. <strong>Python-computed — not AI-guessed.</strong> Always correct.</p>
+        <div class="output-trust">✓ Deterministic math — same inputs always produce same outputs</div>
+      </div>
+
+      <div class="output-card">
+        <div class="output-card-top">
+          <span class="tab-badge">Tab 4</span>
+          <h3>Fixed Assets CCA</h3>
+        </div>
+        <p>Every purchase ≥$500 extracted automatically. Suggested CCA class (8, 10, 12, or 50) based on description. Prevents year-one over-claiming. Ready for your T1/T2 CCA schedule.</p>
+      </div>
+
+      <div class="output-card">
+        <div class="output-card-top">
+          <span class="tab-badge">Tab 5</span>
+          <h3>Needs Review</h3>
+        </div>
+        <p>Flagged transactions with specific questions — "Is this Amazon purchase tools or personal?" Confidence &lt;70 goes here automatically. 85–90% auto-categorized; the rest flagged honestly.</p>
+      </div>
+
+      <div class="output-card">
+        <div class="output-card-top">
+          <span class="tab-badge">Tab 6</span>
+          <h3>4-Way Reconciliation</h3>
+        </div>
+        <p>CC statement ↔ chequing ↔ receipts ↔ invoices. Matched / unmatched / duplicates color-coded green and red. Reconciliation health score. Prove every dollar to CRA.</p>
+        <div class="output-trust">✓ Catches duplicate transactions automatically</div>
+      </div>
+
+      <div class="output-card">
+        <div class="output-card-top">
+          <span class="tab-badge">Tab 7</span>
+          <h3>Statement Validation</h3>
+        </div>
+        <p>PDF total vs computed total. ≤$0.05 = ✅ MATCH. Balance equation check. The trust sheet — confirms nothing was missed or double-counted before you hand it to your client.</p>
+      </div>
+
+      <div class="output-card">
+        <div class="output-card-top">
+          <span class="tab-badge">Tab 8</span>
+          <h3>T5018 Subcontractor</h3>
+        </div>
+        <p>E-transfers ≥$500 to individuals automatically flagged as T5018 candidates. Aggregated by payee for the year. Critical for construction and trades businesses — often missed manually.</p>
+      </div>
+
+      <div class="output-card">
+        <div class="output-card-top">
+          <span class="tab-badge">Tab 9</span>
+          <h3>QuickBooks / Xero Export</h3>
+        </div>
+        <p>One-click CSV with Date, Account, Debit, Credit, Class, Memo. Imports directly into QuickBooks Online, Xero, or Sage without reformatting. Vendor memory saves your corrections for next time.</p>
+      </div>
+
+      <div class="output-card">
+        <div class="output-card-top">
+          <span class="tab-badge">Tab 10</span>
+          <h3>Summary</h3>
+        </div>
+        <p>Total income, total expenses by category, net cash flow, total ITC claimed, CCA asset count. One-page overview for client review meetings. Print-ready.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Canadian Compliance -->
+<section class="canadian" id="canadian">
+  <div class="container">
+    <p class="label">Built for Canadian Law</p>
+    <h2>The only AI bookkeeping tool<br>built for CRA compliance.</h2>
+    <p class="section-sub">Generic US tools miss Canadian-specific rules. We cross-reference 10+ Canadian statutes per statement.</p>
+    <div class="canadian-inner">
+      <div>
+        <div class="ca-rule">
+          <span class="ca-badge">T2125</span>
+          <div><h4>CRA Schedule T2125 Line Mapping</h4><p>Every expense mapped to the exact T2125 line number. Motor Vehicle 9281, Meals 8523, Office 8810, Utilities 8220, and 15+ more — ready to file directly.</p></div>
+        </div>
+        <div class="ca-rule">
+          <span class="ca-badge">HST/GST</span>
+          <div><h4>Deterministic Multi-Province ITC</h4><p>Python calculates every ITC — not AI. Province detected per-transaction (BC vendor on ON card = 5%, not 13%). Meals 50% rule auto-applied. Insurance and bank charges auto-exempt. Always correct.</p></div>
+        </div>
+        <div class="ca-rule">
+          <span class="ca-badge">T5018</span>
+          <div><h4>Subcontractor Payment Flagging</h4><p>E-transfers ≥$500 to individuals flagged as T5018 candidates automatically. Aggregated by payee — critical for construction and trades businesses filing T5018 slips.</p></div>
+        </div>
+        <div class="ca-rule">
+          <span class="ca-badge">CCA</span>
+          <div><h4>Capital Cost Allowance Detection</h4><p>Every purchase ≥$500 flagged with suggested CCA class (8, 10, 12, or 50). Prevents year-one over-claiming. Ready for your T2 Schedule 8 or T1 CCA calculation.</p></div>
+        </div>
+        <div class="ca-rule">
+          <span class="ca-badge">PIPEDA</span>
+          <div><h4>Privacy-First Processing</h4><p>Personal information redacted before analysis. Data encrypted in transit. Never stored permanently. Desktop app available for firms requiring complete local processing.</p></div>
+        </div>
+      </div>
+      <div class="ca-stats">
+        <div class="ca-stat"><div class="ca-stat-num">31</div><div class="ca-stat-label">Canadian banks auto-detected</div></div>
+        <div class="ca-stat"><div class="ca-stat-num">2 min</div><div class="ca-stat-label">Average processing time</div></div>
+        <div class="ca-stat"><div class="ca-stat-num">200+</div><div class="ca-stat-label">Canadian merchants pre-mapped</div></div>
+        <div class="ca-stat"><div class="ca-stat-num">10-tab</div><div class="ca-stat-label">CRA-ready Excel output</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Accuracy / Needs Review -->
+<section class="accuracy" id="accuracy">
+  <div class="container">
+    <p class="label">Honest About Accuracy</p>
+    <h2>What doesn't get categorized<br>automatically — and why.</h2>
+    <div class="accuracy-inner">
+      <div class="accuracy-card">
+        <div class="accuracy-card-hdr">
+          <span>⚠️</span>
+          <span class="accuracy-card-title">Needs Review Tab — 3 items flagged</span>
+        </div>
+        <div class="acc-item">
+          <div class="acc-top"><span class="acc-name">AMZN MKTP CA*Z99335U2</span><span class="acc-amount">$124.99</span></div>
+          <div class="acc-q">"Amazon purchase — is this tools/materials (Materials & Supplies) or office goods (Office Supplies)? Upload receipt to confirm."</div>
+        </div>
+        <div class="acc-item">
+          <div class="acc-top"><span class="acc-name">WALMART #3821 BRAMPTON ON</span><span class="acc-amount">$87.43</span></div>
+          <div class="acc-q">"Walmart purchase — is this business supplies or personal items? Description doesn't contain enough detail to categorize with confidence."</div>
+        </div>
+        <div class="acc-item">
+          <div class="acc-top"><span class="acc-name">INTERAC E-TFR MIKE J</span><span class="acc-amount">$650.00</span></div>
+          <div class="acc-q">"E-transfer to individual over $500 — is this a subcontractor payment (T5018 required) or a personal transfer?"</div>
+        </div>
+      </div>
+      <div class="accuracy-right">
+        <h3>85–90% auto-categorized.<br>The rest flagged honestly.</h3>
+        <p>No bookkeeping tool — human or AI — categorizes 100% of transactions correctly. A human bookkeeper still leaves ambiguous items for client input.</p>
+        <p>BookKeep AI categorizes 85–90% automatically in 2 minutes, then gives your accountant a focused Needs Review tab with specific, answerable questions — not a pile of raw transactions to sort through.</p>
+        <p>Rather than guess wrong on opaque Amazon codes or Walmart receipts, we flag them clearly. A wrong category you miss costs more than a flagged question you answer in 30 seconds.</p>
+        <div class="acc-highlight">
+          <p><strong>The real ROI:</strong> Your accountant spends 10 minutes answering specific questions instead of 3.5 hours doing manual data entry. At $150/hour, that's $500+ saved per statement.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Desktop App -->
+<section class="desktop-app" id="desktop">
+  <div class="container">
+    <p class="label" style="color:rgba(111,207,151,0.7)">For Accounting Firms</p>
+    <h2>Need complete data privacy?<br>Ask about our desktop app.</h2>
+    <p class="section-sub">For firms with strict client data privacy requirements — BookKeep AI is available as a local desktop application. All processing happens on your machine.</p>
+    <div class="desktop-inner">
+      <div class="desktop-card">
+        <h3>Desktop App — Complete Privacy</h3>
+        <p>All processing happens locally. Your clients' financial data never leaves your office — no cloud uploads, no third-party servers, no PIPEDA concerns about data leaving your premises.</p>
+        <ul class="desktop-list">
+          <li>Client data stays on your machine — never uploaded to cloud</li>
+          <li>Works completely offline after setup</li>
+          <li>Unlimited statements — no per-statement fees</li>
+          <li>Full 10-tab CRA output — same engine, local processing</li>
+          <li>Ideal for CPAs with client confidentiality obligations</li>
+          <li>Custom industry rules configured for your client base</li>
+          <li>White-label Excel output with your firm's branding</li>
+        </ul>
+        <a href="mailto:support@bookkeepai.ca?subject=Desktop App Inquiry" class="btn" style="background:#6fcf97;color:var(--green-dk);font-weight:700;display:inline-block;">
+          Contact for Desktop Pricing →
+        </a>
+      </div>
+      <div class="desktop-right">
+        <h3>Who is the desktop app for?</h3>
+        <p>The web version at $9.99/statement is ideal for small businesses, freelancers, and occasional use. The desktop app is built for:</p>
+        <div class="dr-tier">
+          <span class="dr-badge">FIRM</span>
+          <div><h4>Small & Mid-Size Accounting Firms</h4><p>Processing 20+ client statements per month. Volume pricing, unlimited processing, white-label output with your firm's branding.</p></div>
+        </div>
+        <div class="dr-tier">
+          <span class="dr-badge">CPA</span>
+          <div><h4>CPAs with Confidentiality Obligations</h4><p>Client financial data that cannot leave your premises under any circumstances. Full local processing with zero network calls during analysis.</p></div>
+        </div>
+        <div class="dr-tier">
+          <span class="dr-badge">BOOK</span>
+          <div><h4>Independent Bookkeepers</h4><p>Managing 10–50 clients. Pay once for the desktop app, process unlimited statements. No per-statement fees eating into your margins.</p></div>
+        </div>
+        <a href="mailto:support@bookkeepai.ca?subject=Desktop App Inquiry" class="btn btn-outline" style="margin-top:24px;display:inline-block;border-color:rgba(255,255,255,0.3);color:rgba(255,255,255,0.7);">
+          Inquire About Desktop App →
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How It Works -->
+<section class="howitworks" id="how-it-works">
+  <div class="container">
+    <p class="label">How It Works</p>
+    <h2>From PDF to CRA-ready Excel<br>in three steps.</h2>
+    <p class="section-sub">No setup. No learning curve. Upload and go.</p>
+    <div class="steps-row">
+      <div class="step">
+        <div class="step-dot"><span>1</span></div>
+        <h3>Pay & Upload</h3>
+        <p>Pay $9.99, then upload your bank statement PDF. We auto-detect your bank — TD, RBC, BMO, CIBC, Scotiabank, Amex, Triangle MC and 24 more. CID-encoded PDFs handled automatically via Vision API.</p>
+        <span class="step-time">⚡ 30 SECONDS</span>
+      </div>
+      <div class="step">
+        <div class="step-dot"><span>2</span></div>
+        <h3>AI + Python Categorizes</h3>
+        <p>AI categorizes merchants and types. Python deterministically calculates every ITC by province. T5018 flags, CCA detection, 4-way reconciliation, and statement validation all run automatically.</p>
+        <span class="step-time">⚡ UNDER 2 MINUTES</span>
+      </div>
+      <div class="step">
+        <div class="step-dot"><span>3</span></div>
+        <h3>Download Your 10-Tab Excel</h3>
+        <p>Receive a live-formula Excel with all 10 tabs. Review Needs Review with your client in minutes. Export to QuickBooks, Xero, or Sage. Done.</p>
+        <span class="step-time">⚡ INSTANT DELIVERY</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing -->
+<section class="pricing" id="pricing">
+  <div class="container">
+    <p class="label">Pricing</p>
+    <h2>Three ways to use<br>BookKeep AI Pro.</h2>
+    <p class="section-sub">From pay-per-statement to full desktop app for your firm.</p>
+    <div class="pricing-grid">
+      <div class="price-card featured">
+        <div class="price-tag">Most Popular</div>
+        <div class="price-name">Web — Single Statement</div>
+        <div class="price-amount"><span class="price-num">$9.99</span><span class="price-per">/ statement</span></div>
+        <p class="price-desc">Pay once per statement. No account needed. Upload, process, download your 10-tab Excel instantly.</p>
+        <ul class="check-list">
+          <li>31-bank auto-detection + Vision API fallback</li>
+          <li>AI categorization + deterministic ITC math</li>
+          <li>10-tab CRA-ready Excel output</li>
+          <li>4-Way reconciliation</li>
+          <li>Fixed Assets CCA detection</li>
+          <li>T5018 subcontractor flagging</li>
+          <li>QuickBooks & Xero CSV export</li>
+          <li>Results in under 2 minutes</li>
+        </ul>
+        <a href="https://buy.stripe.com/aFa3cv8RT1Ig3h80OZgYU01" target="_blank" class="btn btn-green" style="display:block;text-align:center;font-size:16px;padding:15px;">
+          Start for $9.99 →
+        </a>
+      </div>
+      <div class="price-card">
+        <div class="price-name">Desktop App — Firms</div>
+        <div class="price-amount"><span class="price-num" style="font-size:36px;">Contact</span></div>
+        <p class="price-desc">Local processing — client data never leaves your machine. Unlimited statements. White-label output. For accounting firms and CPAs.</p>
+        <ul class="check-list">
+          <li>Everything in Web version</li>
+          <li>100% local processing — no cloud uploads</li>
+          <li>Works completely offline</li>
+          <li>Unlimited statements — no per-statement fees</li>
+          <li>White-label Excel with firm branding</li>
+          <li>Multi-client management</li>
+          <li>Custom industry rule configuration</li>
+        </ul>
+        <a href="mailto:support@bookkeepai.ca?subject=Desktop App Inquiry" class="btn btn-outline" style="display:block;text-align:center;font-size:16px;padding:15px;">
+          Contact for Pricing →
+        </a>
+      </div>
+      <div class="price-card">
+        <div class="price-name">Enterprise / Volume</div>
+        <div class="price-amount"><span class="price-num" style="font-size:36px;">Volume</span></div>
+        <p class="price-desc">Processing 50+ statements per month? Custom pricing, API access, dedicated support, and integration with your existing workflow.</p>
+        <ul class="check-list">
+          <li>Everything in Desktop version</li>
+          <li>API access for workflow integration</li>
+          <li>Bulk batch processing</li>
+          <li>Dedicated support and onboarding</li>
+          <li>SLA and uptime guarantees</li>
+          <li>Custom CRA rule configuration</li>
+          <li>Custom output formats</li>
+        </ul>
+        <a href="mailto:support@bookkeepai.ca?subject=Enterprise Inquiry" class="btn btn-outline" style="display:block;text-align:center;font-size:16px;padding:15px;">
+          Contact for Enterprise →
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials -->
+<section class="testimonials" id="testimonials">
+  <div class="container">
+    <p class="label">Early Users</p>
+    <h2>What bookkeepers are saying.</h2>
+    <div class="testi-grid">
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <blockquote>"I processed a full year of Triangle Mastercard statements for a construction client. 89% auto-categorized — Costco Wholesale correctly split from Costco Gas, Home Depot to Materials not Personal, WSIB to Government Remittances. The 4-way reconciliation caught a duplicate I would have missed. What used to take 3.5 hours took 15 minutes."</blockquote>
+        <div class="testi-author">
+          <div class="testi-avatar">AK</div>
+          <div><div class="testi-name">A. Kowalski</div><div class="testi-role">Bookkeeper · Hamilton, ON</div></div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <blockquote>"The deterministic ITC math is what sold me. I have clients in Ontario and Alberta on the same card — it automatically applies 13% for ON transactions and 5% for AB, per transaction, based on the vendor location in the description. No US bookkeeping tool does this. The Statement Validation tab that checks PDF totals vs computed totals is brilliant."</blockquote>
+        <div class="testi-author">
+          <div class="testi-avatar">SR</div>
+          <div><div class="testi-name">S. Rajan</div><div class="testi-role">Accountant · Toronto, ON</div></div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <blockquote>"My client had CIBC statements that gave garbled text on copy-paste. I was dreading re-typing 8 months manually. BookKeep AI just handled it — Vision API read every page. 556 transactions extracted, zero manual entry. The CCA tab flagged 6 tool purchases I would have missed as direct expenses."</blockquote>
+        <div class="testi-author">
+          <div class="testi-avatar">DC</div>
+          <div><div class="testi-name">D. Chen</div><div class="testi-role">General Contractor · Mississauga, ON</div></div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <blockquote>"The T5018 tab caught two e-transfers my client had made to subcontractors that I would have missed. As a CPA that's a real compliance risk. I'm looking at the desktop app for my firm — 20+ clients per month at $9.99 each adds up, and the idea of client data staying on our server is exactly what we need."</blockquote>
+        <div class="testi-author">
+          <div class="testi-avatar">ML</div>
+          <div><div class="testi-name">M. Lavoie</div><div class="testi-role">CPA · Ottawa, ON</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-banner">
+  <div class="container">
+    <p class="label" style="color:rgba(111,207,151,0.7)">Get Started</p>
+    <h2>Stop doing bookkeeping manually.</h2>
+    <p>Upload your first statement today. 10-tab CRA-ready Excel in 2 minutes. $9.99 flat — no subscription.</p>
+    <a href="https://buy.stripe.com/aFa3cv8RT1Ig3h80OZgYU01" target="_blank" class="btn" style="font-size:18px;padding:18px 44px;background:#6fcf97;color:var(--green-dk);font-weight:700;">
+      Start for $9.99 →
+    </a>
+    <div class="cta-trust">
+      <div class="cta-trust-item">No subscription</div>
+      <div class="cta-trust-item">31 Canadian banks</div>
+      <div class="cta-trust-item">Vision API for garbled PDFs</div>
+      <div class="cta-trust-item">Deterministic ITC math</div>
+      <div class="cta-trust-item">Desktop app available</div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq" id="faq">
+  <div class="container">
+    <p class="label">FAQ</p>
+    <h2>Common questions.</h2>
+    <div class="faq-grid">
+      <div>
+        <details class="question">
+          <summary>What's the difference between AI categorization and deterministic ITC math?</summary>
+          <p class="ans">AI categorizes merchant names and transaction types — this involves judgment calls that can occasionally be wrong. ITC calculation is pure math: the province rate × the debit amount. We use Python to compute every ITC deterministically, not AI. Same inputs always produce the same correct output. This is important for CRA audit confidence.</p>
+        </details>
+        <details class="question">
+          <summary>Which banks are supported? What about garbled PDFs?</summary>
+          <p class="ans">31 Canadian banks auto-detected including TD, RBC, BMO, CIBC, Scotiabank, Amex, Triangle MC, Tangerine, Simplii, National Bank, and Desjardins. For CIBC and some RBC/BMO statements with CID-encoded fonts that produce garbled copy-paste text, we automatically fall back to Vision API — reading page images directly. Zero manual re-typing required.</p>
+        </details>
+        <details class="question">
+          <summary>Why doesn't it categorize 100% of transactions?</summary>
+          <p class="ans">Opaque transaction codes like "AMZN MKTP CA*Z99335U2" or generic "WALMART #3821" don't contain enough information to categorize confidently. Rather than guess wrong — which could trigger a CRA audit — we flag these in the Needs Review tab with specific questions. 85–90% is auto-categorized; the rest gets your accountant's 10 minutes of attention.</p>
+        </details>
+        <details class="question">
+          <summary>Is my client's data safe?</summary>
+          <p class="ans">Yes. Personal information is redacted before analysis. Data is encrypted in transit and never stored permanently after your session. For firms requiring complete data isolation, our desktop app processes everything locally on your machine — no data ever leaves your office.</p>
+        </details>
+      </div>
+      <div>
+        <details class="question">
+          <summary>What exactly is in the 10-tab Excel?</summary>
+          <p class="ans">Tab 1: All Transactions (formula-linked master sheet). Tab 2: Expense Summary by T2125 line. Tab 3: HST-GST ITC by province. Tab 4: Fixed Assets CCA (purchases ≥$500). Tab 5: Needs Review with specific questions. Tab 6: 4-Way Reconciliation. Tab 7: Statement Validation. Tab 8: T5018 Subcontractor summary. Tab 9: QuickBooks/Xero CSV. Tab 10: Summary overview.</p>
+        </details>
+        <details class="question">
+          <summary>What is 4-way reconciliation?</summary>
+          <p class="ans">It matches your credit card statement against your chequing account, receipts, and invoices — identifying matched, unmatched, and duplicate transactions, color-coded green and red. It also provides a reconciliation health score. This is what proves to CRA that every dollar in your records reconciles correctly.</p>
+        </details>
+        <details class="question">
+          <summary>Can accountants use this for multiple clients?</summary>
+          <p class="ans">Yes. Many bookkeepers and small firms use BookKeep AI for client statement processing at $9.99/statement. For firms processing 20+ statements per month, contact us about the desktop app — unlimited statements, white-label output, and client data that never leaves your office.</p>
+        </details>
+        <details class="question">
+          <summary>Which provinces are supported for ITC?</summary>
+          <p class="ans">All Canadian provinces — Ontario (13% HST), Nova Scotia/NB/NL/PEI (15% HST), Alberta/BC/SK/MB (5% GST), and Quebec (5% GST, QST noted separately). Province is detected per-transaction from the vendor description — a BC vendor on an Ontario card gets 5%, not 13%.</p>
+        </details>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="logo">BookKeep<span>AI</span> Pro</div>
+        <p>AI bookkeeping calibrated for Canadian CRA compliance. 31 banks, Vision API for CID PDFs, deterministic ITC math, 10-tab Excel output, 4-way reconciliation. $9.99 per statement. Desktop app available for firms.</p>
+        <p class="footer-disclaimer">BookKeep AI automates transaction categorization for informational purposes. It is not a substitute for a licensed Canadian accountant or CPA. Always have a professional review your financial statements before filing.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="#problem">The Problem</a>
+        <a href="#vision">Vision API</a>
+        <a href="#output">10-Tab Excel</a>
+        <a href="#canadian">Canadian Compliance</a>
+        <a href="#desktop">Desktop App</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <a href="mailto:support@bookkeepai.ca">support@bookkeepai.ca</a>
+        <a href="mailto:support@bookkeepai.ca?subject=Desktop App Inquiry">Desktop App Inquiry</a>
+        <a href="mailto:support@bookkeepai.ca?subject=Enterprise Inquiry">Enterprise Pricing</a>
+        <a href="/privacy">Privacy Policy</a>
+        <a href="/terms">Terms of Service</a>
+        <a href="/disclaimer">Disclaimer</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 BookKeep AI Pro. All rights reserved. Ontario, Canada.</p>
+      <div class="ca-badge">🇨🇦 BUILT FOR CANADIAN CRA</div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
 
